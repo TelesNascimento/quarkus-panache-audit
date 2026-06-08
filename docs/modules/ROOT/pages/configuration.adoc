@@ -1,0 +1,19 @@
+= Configuration Reference
+
+This extension has no configuration properties. It works with zero configuration
+when `quarkus-security` is present.
+
+To override the user resolution, implement `AuditUserProvider`:
+
+[source,java]
+----
+@ApplicationScoped
+public class CustomAuditUserProvider implements AuditUserProvider {
+    @Override
+    public String getCurrentUser() {
+        return "my-custom-user";
+    }
+}
+----
+
+Your implementation automatically replaces the default via Quarkus `@DefaultBean`.

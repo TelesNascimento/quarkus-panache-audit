@@ -1,0 +1,78 @@
+= Quarkus Panache Audit
+:extension-status: preview
+
+This extension adds `@CreatedBy` and `@LastModifiedBy` support to Quarkus Panache entities,
+automatically populating audit fields from the authenticated user via Quarkus SecurityIdentity.
+
+Fills the gap from https://github.com/quarkusio/quarkus/issues/53104[Quarkus Issue #53104].
+
+== What It Does
+
+[source,java]
+----
+@Entity
+public class Venue extends PanacheEntity {
+
+    public String name;
+
+    @CreatedBy       // <1>
+    public String createdBy;
+
+    @LastModifiedBy  // <2>
+    public String lastModifiedBy;
+}
+----
+<1> Populated on INSERT. Never overwritten on UPDATE (INSERT_ONLY semantics).
+<2> Populated on INSERT and updated on every UPDATE (INSERT_AND_UPDATE semantics).
+
+== Prerequisites
+
+* Quarkus 3.x
+* `quarkus-hibernate-orm-panache`
+* `quarkus-security` (or a custom `AuditUserProvider`)
+
+== Installation
+
+[source,xml,subs=attributes+]
+----
+<dependency>
+    <groupId>io.quarkiverse.panacheaudit</groupId>
+    <artifactId>quarkus-panache-audit</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+== Quick Start
+
+[source,java]
+----
+@Entity
+public class Order extends PanacheEntity {
+
+    public String product;
+    public int quantity;
+
+    @CreatedBy
+    public String createdBy;
+
+    @LastModifiedBy
+    public String lastModifiedBy;
+}
+----
+
+[source,java]
+----
+@POST
+@Transactional
+public Response createOrder(Order order) {
+    order.persist();
+    // order.createdBy  → "alice"  (from SecurityIdentity)
+    // order.lastModifiedBy → "alice"
+    return Response.status(201).entity(order).build();
+}
+----
+
+== See Also
+
+* xref:usage.adoc[Full Usage Guide]
+* xref:configuration.adoc[Configuration Reference]

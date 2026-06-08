@@ -1,0 +1,5 @@
+name: quarkus-panache-audit
+title: Quarkus Panache Audit
+version: dev
+nav:
+  - modules/ROOT/nav.adoc

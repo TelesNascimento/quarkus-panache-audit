@@ -1,0 +1,96 @@
+= Usage Guide
+
+== Basic Usage
+
+=== 1. Add the dependency
+
+[source,xml,subs=attributes+]
+----
+<dependency>
+    <groupId>io.quarkiverse.panacheaudit</groupId>
+    <artifactId>quarkus-panache-audit</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+=== 2. Annotate your entity
+
+[source,java]
+----
+@Entity
+public class MyEntity extends PanacheEntity {
+
+    @CreatedBy
+    public String createdBy;
+
+    @LastModifiedBy
+    public String lastModifiedBy;
+}
+----
+
+=== 3. That's it
+
+With `quarkus-security` on the classpath, `createdBy` and `lastModifiedBy` are
+automatically populated from `SecurityIdentity.getPrincipal().getName()`.
+
+== Custom User Provider
+
+Override the default behavior by declaring your own `AuditUserProvider` bean:
+
+[source,java]
+----
+@ApplicationScoped
+public class MyAuditUserProvider implements AuditUserProvider {
+
+    @Inject
+    SecurityIdentity security;
+
+    @Override
+    public String getCurrentUser() {
+        if (security.isAnonymous()) {
+            return "system";
+        }
+        // Example: return tenant-prefixed username
+        return security.getAttribute("tenant") + "/" + security.getPrincipal().getName();
+    }
+}
+----
+
+== Testing
+
+Use `@TestSecurity` from `quarkus-test-security`:
+
+[source,java]
+----
+@QuarkusTest
+class MyEntityTest {
+
+    @Test
+    @TestSecurity(user = "alice")
+    @Transactional
+    void createdBy_isPopulated() {
+        MyEntity entity = new MyEntity();
+        entity.persistAndFlush();
+        assertThat(entity.createdBy).isEqualTo("alice");
+    }
+}
+----
+
+== Fallback Behavior
+
+[cols="1,1"]
+|===
+| Scenario | Value
+
+| Authenticated user
+| `getPrincipal().getName()`
+
+| Anonymous user
+| `"anonymous"`
+
+| No security context (e.g., batch job)
+| `"system"`
+
+| Any unexpected exception
+| `"system"`
+|===
