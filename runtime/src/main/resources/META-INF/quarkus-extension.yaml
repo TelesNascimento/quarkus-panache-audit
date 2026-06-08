@@ -1,0 +1,16 @@
+name: "Panache Audit"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+metadata:
+  short-name: "panache-audit"
+  keywords:
+    - "panache"
+    - "audit"
+    - "jpa"
+    - "hibernate"
+    - "createdby"
+    - "lastmodifiedby"
+    - "user-tracking"
+  categories:
+    - "data"
+  status: "preview"
+  guide: "https://github.com/TelesNascimento/quarkus-panache-audit"
