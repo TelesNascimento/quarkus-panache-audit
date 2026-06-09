@@ -2,13 +2,13 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-`@CreatedBy` and `@LastModifiedBy` for Quarkus Panache. Fills the gap from [Issue #53104](https://github.com/quarkusio/quarkus/issues/53104).
+`@CreatedBy` and `@LastModifiedBy` for Quarkus. Works with Panache entities, plain JPA `@Entity`, and Quarkus Data. Fills the gap from [Issue #53104](https://github.com/quarkusio/quarkus/issues/53104).
 
 ---
 
-Spring Data JPA ships `@CreatedBy` and `@LastModifiedBy` out of the box. Quarkus Panache only has `@CreationTimestamp` and `@UpdateTimestamp` (timestamps only, no user tracking). Every Quarkus project that needs auditing ends up writing the same boilerplate in every service method.
+Spring Data JPA ships `@CreatedBy` and `@LastModifiedBy` out of the box. Quarkus only has `@CreationTimestamp` and `@UpdateTimestamp` (timestamps only, no user tracking). Every Quarkus project that needs auditing ends up writing the same boilerplate in every service method.
 
-This extension solves it with two annotations backed by Hibernate 6 `BeforeExecutionGenerator`:
+This extension solves it with two annotations backed by Hibernate 6 `BeforeExecutionGenerator`. It works with **any Hibernate-managed entity** - `PanacheEntity`, `PanacheEntityBase`, Quarkus Data entities, or plain `@Entity` classes:
 
 ```java
 @Entity
@@ -24,7 +24,24 @@ public class Order extends PanacheEntity {
 }
 ```
 
-That is all you need. With any Quarkus Security extension on the classpath (`quarkus-oidc`, `quarkus-smallrye-jwt`, etc.), `createdBy` and `lastModifiedBy` are populated automatically from `SecurityIdentity`.
+Also works with plain JPA entities - no Panache required:
+
+```java
+@Entity
+public class Payment {
+
+    @Id @GeneratedValue
+    public Long id;
+
+    @CreatedBy
+    public String createdBy;
+
+    @LastModifiedBy
+    public String lastModifiedBy;
+}
+```
+
+With any Quarkus Security extension on the classpath (`quarkus-oidc`, `quarkus-smallrye-jwt`, etc.), `createdBy` and `lastModifiedBy` are populated automatically from `SecurityIdentity`.
 
 ---
 

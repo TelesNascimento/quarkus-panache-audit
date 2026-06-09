@@ -199,4 +199,42 @@ class PanacheAuditTest {
                 .as("Should find at least the entity just created by 'query-user'")
                 .isGreaterThanOrEqualTo(1);
     }
+
+    @Test
+    @Order(11)
+    @TestSecurity(user = "alice")
+    @Transactional
+    void plainJpaEntity_createdBy_isPopulated_onInsert() {
+        PlainJpaEntity entity = new PlainJpaEntity();
+        entity.name = "Plain JPA";
+        em.persist(entity);
+        em.flush();
+
+        assertThat(entity.createdBy)
+                .as("@CreatedBy must work on plain @Entity without PanacheEntity")
+                .isEqualTo("alice");
+        assertThat(entity.lastModifiedBy)
+                .as("@LastModifiedBy must work on plain @Entity without PanacheEntity")
+                .isEqualTo("alice");
+    }
+
+    @Test
+    @Order(12)
+    @TestSecurity(user = "alice")
+    @Transactional
+    void plainJpaEntity_createdBy_isNeverOverwritten_onUpdate() {
+        PlainJpaEntity entity = new PlainJpaEntity();
+        entity.name = "Original";
+        em.persist(entity);
+        em.flush();
+        assertThat(entity.createdBy).isEqualTo("alice");
+
+        entity.name = "Updated";
+        em.flush();
+
+        PlainJpaEntity reloaded = em.find(PlainJpaEntity.class, entity.id);
+        assertThat(reloaded.createdBy)
+                .as("@CreatedBy must not change on UPDATE for plain @Entity")
+                .isEqualTo("alice");
+    }
 }

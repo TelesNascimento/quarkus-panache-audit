@@ -18,3 +18,4 @@ target/
 # Quarkus
 .quarkus/
 .vscode/
+.DS_Store
